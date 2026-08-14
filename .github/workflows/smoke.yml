@@ -1,0 +1,46 @@
+name: Smoke Tests (PR Gate)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Run smoke tests
+        run: npx playwright test --grep @smoke --project=chromium-desktop
+        env:
+          CI: true
+          SITE_URL: ${{ vars.SITE_URL || 'https://comanage.com' }}
+
+      - name: Upload smoke results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

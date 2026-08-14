@@ -1,0 +1,86 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.shard }} / ${{ matrix.total-shards }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+        total-shards: [2]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ matrix.total-shards }}
+        env:
+          CI: true
+          SITE_URL: ${{ vars.SITE_URL || 'https://comanage.com' }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-shard-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  merge-reports:
+    name: Merge test reports
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-results-shard-*
+          merge-multiple: true
+          path: all-results/
+
+      - name: Merge reports
+        run: npx playwright merge-reports --reporter html ./all-results
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-merged
+          path: playwright-report/
+          retention-days: 30

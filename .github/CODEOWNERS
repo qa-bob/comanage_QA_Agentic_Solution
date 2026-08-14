@@ -1,0 +1,24 @@
+# CODEOWNERS — coManage QA Agentic Solution
+#
+# These owners are automatically requested for review on PRs
+# that modify the listed paths.
+
+# Default owner for all files
+* @rosmall
+
+# Core framework files — require careful review
+playwright.config.ts          @rosmall
+src/fixtures/site.fixture.ts  @rosmall
+src/types/site-config.types.ts @rosmall
+site.config.json              @rosmall
+
+# CI/CD
+.github/workflows/            @rosmall
+
+# Visual baselines — changes must be intentional
+__snapshots__/                @rosmall
+
+# Claude Code configuration
+CLAUDE.md                     @rosmall
+AGENTS.md                     @rosmall
+.claude/                      @rosmall
