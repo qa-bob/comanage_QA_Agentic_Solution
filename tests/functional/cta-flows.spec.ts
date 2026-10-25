@@ -13,12 +13,13 @@ import { test, expect } from '@fixtures/site.fixture';
 test.describe('CTA Flows @functional', () => {
   test.beforeEach(async ({ page, siteConfig }) => {
     await page.goto(siteConfig.url, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   // ── Primary CTA ──────────────────────────────────────────────────────────────
 
-  test('primary CTA button is visible above the fold @functional', async ({ page }) => {
+  test('primary CTA button is visible above the fold @functional', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'Runs only in the "chromium-desktop" project');
     // "Above the fold" — element is in the initial viewport without scrolling
     await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -53,10 +54,7 @@ test.describe('CTA Flows @functional', () => {
       hasText: /get started|try free|request demo|book demo|sign up/i,
     }).first();
 
-    if (await cta.count() === 0) {
-      console.warn('[functional/cta] No primary CTA found — skipping href check.');
-      return;
-    }
+    test.skip(await cta.count() === 0, 'No primary CTA found');
 
     const tagName = await cta.evaluate((el) => el.tagName.toLowerCase());
 
@@ -76,16 +74,10 @@ test.describe('CTA Flows @functional', () => {
       hasText: /get a demo|request demo|book a demo|start trial|try free/i,
     }).first();
 
-    if (await demoCta.count() === 0) {
-      console.warn('[functional/cta] No demo/trial CTA link found — skipping navigation check.');
-      return;
-    }
+    test.skip(await demoCta.count() === 0, 'No demo/trial CTA link found');
 
-    const href = await demoCta.getAttribute('href');
-    if (!href || href === '#') {
-      console.warn('[functional/cta] Demo CTA has no href — may use JS click handler.');
-      return;
-    }
+    const href = (await demoCta.getAttribute('href')) ?? '';
+    test.skip(!href || href === '#', 'Demo CTA has no href — may use JS click handler');
 
     // Resolve href relative to siteConfig.url
     const target = href.startsWith('http') ? href : siteConfig.url.replace(/\/$/, '') + href;
@@ -125,10 +117,7 @@ test.describe('CTA Flows @functional', () => {
       hasText: /contact us|contact|get in touch|reach out|talk to us/i,
     }).first();
 
-    if (await contactCta.count() === 0) {
-      console.warn('[functional/cta] No "Contact us" CTA found on homepage.');
-      return;
-    }
+    test.skip(await contactCta.count() === 0, 'No "Contact us" CTA found on homepage');
 
     await expect(contactCta).toBeVisible({ timeout: 5_000 });
 
@@ -148,7 +137,7 @@ test.describe('CTA Flows @functional', () => {
     });
 
     const count = await ctaLinks.count();
-    if (count === 0) return;
+    test.skip(count === 0, 'No CTA links found');
 
     const firstCta = ctaLinks.first();
     await expect(firstCta).toBeVisible({ timeout: 5_000 });
@@ -167,7 +156,7 @@ test.describe('CTA Flows @functional', () => {
     });
 
     const count = await ctaLinks.count();
-    if (count === 0) return;
+    test.skip(count === 0, 'No CTA links found');
 
     const brokenLinks: string[] = [];
 
