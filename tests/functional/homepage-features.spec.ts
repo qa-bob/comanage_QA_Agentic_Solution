@@ -62,7 +62,7 @@ test.describe('Homepage Features @functional', () => {
   // ── Features / solutions section ──────────────────────────────────────────────
 
   test('features or solutions section is present @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Property management SaaS typically has a features grid or list
     const featureSection = page.locator(
@@ -84,7 +84,7 @@ test.describe('Homepage Features @functional', () => {
   });
 
   test('feature section contains descriptive content @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Each feature item should have a heading and a description
     const featureHeadings = page.locator(
@@ -108,7 +108,7 @@ test.describe('Homepage Features @functional', () => {
   // ── Social proof / testimonials ──────────────────────────────────────────────
 
   test('social proof section is present (testimonials, stats, or logos) @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Look for any common social proof pattern
     const testimonialSection = page.locator(
@@ -134,7 +134,7 @@ test.describe('Homepage Features @functional', () => {
   // ── Images and media ─────────────────────────────────────────────────────────
 
   test('hero image or illustration is visible @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const heroImage = page.locator(
       'header img, [class*="hero"] img, [class*="hero"] video, ' +
@@ -157,14 +157,11 @@ test.describe('Homepage Features @functional', () => {
   // ── Footer ───────────────────────────────────────────────────────────────────
 
   test('footer is present and has links @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const footer = page.locator('footer, [role="contentinfo"]').first();
 
-    if (await footer.count() === 0) {
-      console.warn('[functional] No <footer> or [role="contentinfo"] found.');
-      return;
-    }
+    test.skip(await footer.count() === 0, 'No <footer> or [role="contentinfo"] found');
 
     await expect(footer).toBeVisible({ timeout: 10_000 });
 
@@ -174,10 +171,10 @@ test.describe('Homepage Features @functional', () => {
   });
 
   test('footer contains company information @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const footer = page.locator('footer, [role="contentinfo"]').first();
-    if (await footer.count() === 0) return;
+    test.skip(await footer.count() === 0, 'No <footer> or [role="contentinfo"] found');
 
     const footerText = await footer.textContent();
     expect(footerText?.trim().length ?? 0, 'Footer should have text content').toBeGreaterThan(0);
@@ -186,7 +183,7 @@ test.describe('Homepage Features @functional', () => {
   // ── Page structure quality ────────────────────────────────────────────────────
 
   test('page has multiple distinct content sections @functional', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const sections = await page.locator('section, [class*="section"], [class*="block"]').count();
     const contentHeadings = await page.locator('h2').count();

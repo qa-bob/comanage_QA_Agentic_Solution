@@ -49,7 +49,7 @@ test.describe('Pricing Page @functional', () => {
   test.beforeEach(async ({ page, siteConfig }) => {
     const target = pricingUrl ?? siteConfig.url;
     await page.goto(target, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   // ── Page load ─────────────────────────────────────────────────────────────────
@@ -90,10 +90,7 @@ test.describe('Pricing Page @functional', () => {
       const priceText = page.locator('text=/\\$\\d+|per month|\\/mo|free/i');
       const priceCount = await priceText.count();
 
-      if (priceCount === 0) {
-        console.warn('[functional/pricing] No pricing information found at all — site may use "Contact for pricing" model.');
-        return;
-      }
+      test.skip(priceCount === 0, 'No pricing information found at all — site may use "Contact for pricing" model');
 
       expect(priceCount, 'Some pricing information should be present').toBeGreaterThan(0);
       return;
@@ -109,10 +106,7 @@ test.describe('Pricing Page @functional', () => {
     );
 
     const count = await tierHeadings.count();
-    if (count === 0) {
-      console.warn('[functional/pricing] Could not identify individual tier headings.');
-      return;
-    }
+    test.skip(count === 0, 'Could not identify individual tier headings');
 
     for (let i = 0; i < Math.min(count, 5); i++) {
       const text = await tierHeadings.nth(i).textContent();
@@ -155,7 +149,7 @@ test.describe('Pricing Page @functional', () => {
     });
 
     const count = await ctaButtons.count();
-    if (count === 0) return;
+    test.skip(count === 0, 'No pricing CTAs found');
 
     for (let i = 0; i < Math.min(count, 10); i++) {
       const text = await ctaButtons.nth(i).textContent();
